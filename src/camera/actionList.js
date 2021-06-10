@@ -5,18 +5,21 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListIcon from '@material-ui/icons/List';
+import Copy from 'copy-to-clipboard';
+import CopyAlert from './CopyAlert'
 import Play from './play';
 import CameraEdit from './cameraEdit';
+import API from '../api/Api';
 
 const useStyles = makeStyles(() => ({
   root: {
     position: 'relative',
-  },
+  }, 
   dropdown: {
     position: 'absolute',
     top: 28,
     right: 0,
-    left: 0,
+    left: 0, 
     zIndex: 999,
     border: '0px solid',
     padding: 1,
@@ -27,6 +30,7 @@ const useStyles = makeStyles(() => ({
 export default function ActionList(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
+  const [dialogObj, setDialogObj] = React.useState({title:"Success",content:"copy success !"});
 
   const handleClick = () => {
     setOpen((prev) => !prev);
@@ -48,6 +52,14 @@ export default function ActionList(props) {
     editRef.current.handleClickOpen();
   }
 
+  let copyRef = React.createRef();
+  function share() {
+    setOpen(false);
+    let sURL = window.location.origin+window.location.pathname+"#/live?method=permanent&code="+props.row.code+"&authCode="+props.row.playAuthCode
+    Copy(sURL);
+    copyRef.current.handleClickOpen();
+  }
+
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <div className={classes.root}>
@@ -63,11 +75,15 @@ export default function ActionList(props) {
               <ListItem button onClick={play}>
                 <ListItemText primary="play" />
               </ListItem>
+              <ListItem button onClick={share}>
+                <ListItemText primary="share" />
+              </ListItem>
             </List>
           </div>
         ) : null}
         <Play row={props.row} onRef={playRef}/>
-        <CameraEdit row={props.row} type="edit"  callBack={props.callBack} onRef={editRef}/>
+        <CameraEdit row={props.row} type="edit" callBack={props.callBack} onRef={editRef}/>
+        <CopyAlert dialog={dialogObj} onRef={copyRef}/>
       </div>
     </ClickAwayListener>
   );

@@ -1,12 +1,12 @@
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import Routing from './route/Routing';
 
 function Rtmp2flv() {
   return (
     <div>
-        <BrowserRouter>
+        <HashRouter>
             <Routing/>
-        </BrowserRouter>
+        </HashRouter>
     </div>
   );
 } 

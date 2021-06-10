@@ -9,6 +9,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 import TextField from '@material-ui/core/TextField';
 import { Alert, AlertTitle } from '@material-ui/lab';
+import Switch from '@material-ui/core/Switch';
 import API from '../api/Api';
 
 const useStyles = makeStyles((theme) => ({
@@ -37,14 +38,14 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 export default function Play(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
+  const [enabled, setEnabled] = React.useState(props.row.enabled === 1?true:false);
   const [row, setRow] = React.useState({
     id: props.row.id,
     code: props.row.code,
     rtmpAuthCode: props.row.rtmpAuthCode,
-    authCodeTemp: props.row.authCodeTemp,
-    authCodePermanent: props.row.authCodePermanent,
+    playAuthCode: props.row.playAuthCode,
     onlineStatus: props.row.onlineStatus,
-    enabled: props.row.enabled+"",
+    enabled: props.row.enabled,
   });
   const [alertShow, setAlertShow] = React.useState(false);
   const [alertText, setAlertText] = React.useState("");
@@ -101,8 +102,15 @@ export default function Play(props) {
   };
 
   const formChange = (event) => {
-    console.log(event.target.value)
-    row[event.target.id] = event.target.value
+    row[event.target.id] = event.target.value?1:0
+  }
+
+  const switchChange = (event) => {
+    console.log(event.target.checked)
+    row[event.target.id] = event.target.checked?1:0
+    if(event.target.id==="enabled"){
+      setEnabled(event.target.checked)
+    }
   }
 
   return (
@@ -180,11 +188,19 @@ export default function Play(props) {
               />
             </div> */}
             <div>
-              <TextField 
+              {/* <TextField 
                 id="enabled"
                 label="enabled" 
                 defaultValue={row.enabled}
                 onChange={formChange}
+              /> */}
+              <Switch
+                checked={enabled}
+                id="enabled"
+                onChange={switchChange}
+                color="primary"
+                name="enabled"
+                inputProps={{ 'aria-label': 'primary checkbox' }}
               />
             </div>
           </form>

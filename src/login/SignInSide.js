@@ -72,7 +72,7 @@ export default function SignInSide() {
         let localStorage = window.localStorage
         localStorage.setItem("token",res.data.token)
         localStorage.setItem("tokenExpired", "false");
-        window.location.pathname = "/" 
+        window.location.hash = "#/" 
         return;
       }
       setAlertText(res.msg);

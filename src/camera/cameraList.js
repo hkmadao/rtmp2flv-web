@@ -34,12 +34,8 @@ const columns = [
     label: 'rtmpAuthCode',
   },
   {
-    id: 'authCodeTemp',
-    label: 'authCodeTemp',
-  },
-  {
-    id: 'authCodePermanent',
-    label: 'authCodePermanent',
+    id: 'playAuthCode',
+    label: 'playAuthCode',
   },
   {
     id: 'onlineStatus',
@@ -90,7 +86,14 @@ export default function CameraList() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   var rows,setRows;
   [rows, setRows] = React.useState([]);
-  var obj = {}
+  var editRow = {
+    id: "",
+    code: "",
+    rtmpAuthCode: "",
+    playAuthCode: "",
+    onlineStatus: 0,
+    enabled: 1,
+  }
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -133,7 +136,7 @@ export default function CameraList() {
           </Typography>
         </Toolbar>
       </AppBar>
-      <CameraEdit row={obj} type="add" callBack={getPageList} onRef={editRef}/>
+      <CameraEdit row={editRow} type="add" callBack={getPageList} onRef={editRef}/>
       <TableContainer className={classes.container}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>

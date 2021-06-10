@@ -1,6 +1,6 @@
-
 import Env from '../conf/env';
 import axios from 'axios'
+
 
 axios.defaults.withCredentials = false;
 
@@ -19,7 +19,7 @@ axios.interceptors.response.use(function (response) {
   if (response.data && response.data.errcode) {
     if (parseInt(response.data.errcode) === 401) {
       //nologin
-      window.location.pathname = "/login"
+      window.location.hash = "#/login"
     }
   }
   return response;
@@ -32,13 +32,15 @@ axios.interceptors.response.use(function (response) {
       if (error.response.status === 401) {
         if (!window.localStorage.getItem("token") || !window.localStorage.getItem("tokenExpired") || window.localStorage.getItem("tokenExpired") === "false") { 
           window.localStorage.setItem("tokenExpired", "true");
-          window.location.pathname = "/login"
+          window.location.hash = "#/login"
         }
       } else if (error.response.status === 500) {
-        
+        alert("server exception !")
       }
     } else if (error && String(error).toLowerCase().substring(0, 14) === "error: timeout") {
-
+      alert("server timeout !")
+    }else{
+      alert("server error !")
     }
     return Promise.reject(error);
   }

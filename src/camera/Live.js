@@ -1,12 +1,10 @@
 import React, { useImperativeHandle } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
-import Slide from '@material-ui/core/Slide';
 import Flv from 'flv.js';
 import API from '../api/Api';
 
@@ -24,40 +22,35 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
-
 export default function Play(props) {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
   var player = null;
 
-  //用useImperativeHandle暴露一些外部ref能访问的属性
-  useImperativeHandle(props.onRef, () => {
-    return {
-      handleClickOpen: handleClickOpen,
+  const getQueryString = (name) => {
+    let reg = new RegExp("(^|&|\\?)" + name + "=([^&]*)(&|$)", "i");
+    let r = window.location.hash.substr(1).match(reg);
+    if (r != null) {
+        return decodeURIComponent(r[2]);
     };
-  });
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+    return null;
+  }
 
   const flv_load = (val) => {
-      var mediaDataSource = {
-          type: 'flv'
-      };
-      let videoUrl = API.flvURL+"/live/permanent/"+props.row.code+"/"+props.row.playAuthCode+".flv";
-      mediaDataSource['url'] = videoUrl;
-      mediaDataSource['hasAudio'] = false;
-      mediaDataSource['isLive'] = true;
-      console.log('MediaDataSource', mediaDataSource);
-      flv_load_mds(mediaDataSource);
+    let method = getQueryString("method");
+    let code = getQueryString("code");
+    let authCode = getQueryString("authCode");
+    if(!method || !code || !authCode){
+      return
+    }
+    var mediaDataSource = {
+      type: 'flv'
+    };
+    let videoUrl = API.flvURL+"/live/"+method+"/"+code+"/"+authCode+".flv";
+    mediaDataSource['url'] = videoUrl;
+    mediaDataSource['hasAudio'] = false;
+    mediaDataSource['isLive'] = true;
+    console.log('MediaDataSource', mediaDataSource);
+    flv_load_mds(mediaDataSource);
   }
 
   const flv_load_mds = (mediaDataSource) => {
@@ -84,7 +77,7 @@ export default function Play(props) {
 
   return (
     <div>
-      <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
+      <div>
         <AppBar className={classes.appBar}>
           <Toolbar>
             <Button variant="contained" onClick={flv_load}>
@@ -93,9 +86,9 @@ export default function Play(props) {
             <Typography variant="h6" className={classes.title}>
               
             </Typography>
-            <Button autoFocus color="inherit" onClick={handleClose}>
+            {/* <Button autoFocus color="inherit">
               <CloseIcon />
-            </Button>
+            </Button> */}
           </Toolbar>
         </AppBar>
         <div className={classes.videoContainer}>
@@ -105,7 +98,7 @@ export default function Play(props) {
                 </video>
             </div>
         </div>
-      </Dialog>
+      </div>
     </div>
   );
 }
