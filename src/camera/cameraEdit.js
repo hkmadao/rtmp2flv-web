@@ -102,7 +102,7 @@ export default function Play(props) {
   };
 
   const formChange = (event) => {
-    row[event.target.id] = event.target.value?1:0
+    row[event.target.id] = event.target.value
   }
 
   const switchChange = (event) => {
