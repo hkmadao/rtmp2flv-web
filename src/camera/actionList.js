@@ -7,8 +7,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListIcon from '@material-ui/icons/List';
 import Copy from 'copy-to-clipboard';
 import CopyAlert from './CopyAlert'
-import Play from './play';
-import CameraEdit from './cameraEdit';
+import Play from './Play';
+import CameraEdit from './CameraEdit';
 import API from '../api/Api';
 
 const useStyles = makeStyles(() => ({
@@ -31,6 +31,7 @@ export default function ActionList(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const [dialogObj, setDialogObj] = React.useState({title:"Success",content:"copy success !"});
+  const [row,setRow] = React.useState(props.row);
 
   const handleClick = () => {
     setOpen((prev) => !prev);
@@ -39,6 +40,20 @@ export default function ActionList(props) {
   const handleClickAway = () => {
     setOpen(false);
   };
+
+  const enabled=() => {
+    row.enabled = row.enabled === 1?0:1
+    API.cameraEnabled(row)
+    .then(res => {
+      if (res.code === 1) {
+        setOpen(false);
+        if (props.callBack){
+          props.callBack()
+        }
+        return;
+      }
+    });
+  }
 
   let playRef = React.createRef();
   function play() {
@@ -71,6 +86,12 @@ export default function ActionList(props) {
             <List component="nav" aria-label="secondary mailbox folders">
               <ListItem button>
                 <ListItemText primary="edit" onClick={edit}/>
+              </ListItem>
+              <ListItem button onClick={enabled}>
+                {
+                  props.row.enabled === 1?
+                  <ListItemText primary="turn-off" />:<ListItemText primary="turn-on" />
+                }
               </ListItem>
               <ListItem button onClick={play}>
                 <ListItemText primary="play" />

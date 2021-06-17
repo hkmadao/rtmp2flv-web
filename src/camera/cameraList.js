@@ -10,12 +10,13 @@ import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import LinkIcon from '@material-ui/icons/Link';
-import ActionList from './actionList';
-import CameraEdit from './cameraEdit';
+import ActionList from './ActionList';
+import CameraEdit from './CameraEdit';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import AppBar from '@material-ui/core/AppBar';
+import Switch from '@material-ui/core/Switch';
 import API from '../api/Api';
 
 const columns = [
@@ -45,6 +46,15 @@ const columns = [
   {
     id: 'enabled',
     label: 'enabled',
+    format: (value) => {
+      return <Switch
+              checked={value === 1}
+              id="enabled"
+              color="primary"
+              name="enabled"
+              inputProps={{ 'aria-label': 'primary checkbox' }}
+            />
+    }
   },
   {
     id: 'action',

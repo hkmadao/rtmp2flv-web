@@ -1,5 +1,5 @@
  import Env from '../conf/env';
- import * as API from './'
+ import * as API from './AxiosConf'
  
  let serverURL = Env.serverURL;
  export default {
@@ -16,6 +16,8 @@
     cameraDelete: (params) => {
         return API.POST(`/camera/delete/${params.id}`,params)
     },
- 
+    cameraEnabled: (params) => {
+        return API.POST(`/camera/enabled`,params)
+    },
  }
  

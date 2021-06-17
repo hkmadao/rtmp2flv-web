@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Route, Switch } from "react-router-dom";
-import CameraList from '../camera/cameraList';
+import CameraList from '../camera/CameraList';
 import SignInSide from '../login/SignInSide';
 import NoMatch from '../404/NoMatch';
 import Live from '../camera/Live';

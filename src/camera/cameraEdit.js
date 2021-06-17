@@ -171,29 +171,7 @@ export default function Play(props) {
                 onChange={formChange}
               />
             </div>
-            {/* <div>
-              <TextField 
-                id="authCodeTemp" 
-                label="authCodeTemp" 
-                defaultValue={row.authCodeTemp}
-                onChange={formChange}
-              />
-            </div>
             <div>
-              <TextField 
-                id="authCodePermanent" 
-                label="authCodePermanent" 
-                defaultValue={row.authCodePermanent}
-                onChange={formChange}
-              />
-            </div> */}
-            <div>
-              {/* <TextField 
-                id="enabled"
-                label="enabled" 
-                defaultValue={row.enabled}
-                onChange={formChange}
-              /> */}
               <Switch
                 checked={enabled}
                 id="enabled"

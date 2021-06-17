@@ -5,12 +5,14 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
+import Switch from '@material-ui/core/Switch';
 import Flv from 'flv.js';
 import API from '../api/Api';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
     position: 'relative',
+    backgroundColor: '#eebbaa',
   },
   title: {
     marginLeft: theme.spacing(2),
@@ -24,7 +26,13 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Play(props) {
   const classes = useStyles();
+  const [audio, setAudio] = React.useState(true);
   var player = null;
+  var lastDecodedFrame = 0
+
+  const switchChange = (event) => {
+    setAudio(event.target.checked)
+  }
 
   const getQueryString = (name) => {
     let reg = new RegExp("(^|&|\\?)" + name + "=([^&]*)(&|$)", "i");
@@ -46,8 +54,9 @@ export default function Play(props) {
       type: 'flv'
     };
     let videoUrl = API.flvURL+"/live/"+method+"/"+code+"/"+authCode+".flv";
+    // let videoUrl = window.origin.substring(0,window.origin.lastIndexOf(":"))+":9091/live/"+method+"/"+code+"/"+authCode+".flv";
     mediaDataSource['url'] = videoUrl;
-    mediaDataSource['hasAudio'] = false;
+    mediaDataSource['hasAudio'] = audio;
     mediaDataSource['isLive'] = true;
     console.log('MediaDataSource', mediaDataSource);
     flv_load_mds(mediaDataSource);
@@ -58,10 +67,11 @@ export default function Play(props) {
     
       if (typeof player !== "undefined") {
           if (player != null) {
-              player.unload();
-              player.detachMediaElement();
-              player.destroy();
-              player = null;
+            player.pause();
+            player.unload();
+            player.detachMediaElement();
+            player.destroy();
+            player= null;
           }
       }
       
@@ -69,6 +79,40 @@ export default function Play(props) {
           enableWorker: false,
           lazyLoadMaxDuration: 3 * 60,
           seekType: 'range',
+      });
+      player.on(Flv.Events.ERROR, (errorType, errorDetail, errorInfo) => {
+        console.log("errorType:", errorType);
+        console.log("errorDetail:", errorDetail);
+        console.log("errorInfo:", errorInfo);
+        //视频出错后销毁重新创建
+        if (player) {
+          player.pause();
+          player.unload();
+          player.detachMediaElement();
+          player.destroy();
+          player= null;
+          flv_load()
+        }
+      });
+      //画面卡死
+      player.on(Flv.Events.STATISTICS_INFO, function (res) {
+        if (lastDecodedFrame == 0) {
+          lastDecodedFrame = res.decodedFrames;
+          return;
+        }
+        if (lastDecodedFrame != res.decodedFrames) {
+          lastDecodedFrame = res.decodedFrames;
+        } else {
+            lastDecodedFrame = 0;
+            if (player) {
+              player.pause();
+              player.unload();
+              player.detachMediaElement();
+              player.destroy();
+              player= null;
+              flv_load()
+          }
+        }
       });
       player.attachMediaElement(element);
       player.load();
@@ -84,7 +128,15 @@ export default function Play(props) {
               play
             </Button>
             <Typography variant="h6" className={classes.title}>
-              
+            hasAudio
+              <Switch
+                checked={audio}
+                id="Audio"
+                color="primary"
+                name="hasAudio"
+                onChange={switchChange}
+                inputProps={{ 'aria-label': 'primary checkbox' }}
+              />
             </Typography>
             {/* <Button autoFocus color="inherit">
               <CloseIcon />

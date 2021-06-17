@@ -65,6 +65,12 @@ export default function SignInSide() {
   const [alertShow, setAlertShow] = React.useState(false);
   const [alertText, setAlertText] = React.useState("");
 
+  const onLoad = () =>{
+    if ( window.localStorage.getItem("tokenExpired") === "true"){
+      localStorage.setItem("tokenExpired", "false");
+    }
+  }
+
   const login = (event) => {
     API.login(user)
     .then(res => {
@@ -83,6 +89,8 @@ export default function SignInSide() {
   const formChange = (event) => {
     user[event.target.id] = event.target.value
   }
+
+  React.useEffect(onLoad,[]) 
 
   return (
     <Grid container component="main" className={classes.root}>
