@@ -171,6 +171,7 @@ export default function Play(props) {
                 onChange={formChange}
               />
             </div>
+            {props.type === 'edit'?"":
             <div>
               <Switch
                 checked={enabled}
@@ -181,6 +182,7 @@ export default function Play(props) {
                 inputProps={{ 'aria-label': 'primary checkbox' }}
               />
             </div>
+            }
           </form>
         </div>
       </Dialog>
