@@ -34,6 +34,11 @@ export default function Play(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const [audio, setAudio] = React.useState(true);
+  const [playParam, setPlayParam] = React.useState(props.playParam || {
+    playMethod: "",
+    cameraCode: "",
+    authCode: ""
+  });
   var player = null;
   var lastDecodedFrame = 0
 
@@ -60,7 +65,7 @@ export default function Play(props) {
       var mediaDataSource = {
           type: 'flv'
       };
-      let videoUrl = API.flvURL+"/live/permanent/"+props.row.code+"/"+props.row.playAuthCode+".flv";
+      let videoUrl = API.flvURL+"/live/"+playParam.playMethod+"/"+playParam.cameraCode+"/"+playParam.authCode+".flv";
       mediaDataSource['url'] = videoUrl;
       mediaDataSource['hasAudio'] = audio;
       mediaDataSource['isLive'] = true;

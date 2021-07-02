@@ -8,15 +8,15 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import LinkOffIcon from '@material-ui/icons/LinkOff';
-import LinkIcon from '@material-ui/icons/Link';
-import ActionList from './ActionList';
-import CameraEdit from './CameraEdit';
+import {NavLink} from 'react-router-dom'
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import AppBar from '@material-ui/core/AppBar';
 import Switch from '@material-ui/core/Switch';
+import Dayjs from 'dayjs'
+import ActionList from './ActionList';
+import CameraShareEdit from './CameraShareEdit';
 import API from '../api/Api';
 
 const columns = [
@@ -25,23 +25,29 @@ const columns = [
     label: 'id',
     minWidth: 170
   },
-  { 
-    id: 'code', 
-    label: '摄像头编号', 
-    minWidth: 100 
+  {
+    id: 'name',
+    label: '分享名称',
   },
   {
-    id: 'rtmpAuthCode',
-    label: '摄像头rtmp权限码',
+    id: 'authCode',
+    label: '权限码',
   },
   {
-    id: 'playAuthCode',
-    label: '播放权限码',
+    id: 'startTime',
+    label: '开始时间',
+    format: (value) => {
+        let offset = new Date().getTimezoneOffset()
+        return value?Dayjs(value).add(offset,'minute').format("YYYY-MM-DD HH:mm"):"---"
+    }
   },
   {
-    id: 'onlineStatus',
-    label: '在线状态',
-    format: (value) => value && value === 1?<LinkIcon/>:<LinkOffIcon/>,
+    id: 'deadline',
+    label: '截止时间',
+    format: (value) => {
+      let offset = new Date().getTimezoneOffset()
+        return value?Dayjs(value).add(offset,'minute').format("YYYY-MM-DD HH:mm"):"---"
+    }
   },
   {
     id: 'enabled',
@@ -57,35 +63,12 @@ const columns = [
     }
   },
   {
-    id: 'live',
-    label: '直播状态',
-    format: (value) => {
-      return <Switch
-              checked={value === 1}
-              id="live"
-              color="primary"
-              name="live"
-              inputProps={{ 'aria-label': 'primary checkbox' }}
-            />
-    }
-  },
-  {
-    id: 'saveVideo',
-    label: '录像状态',
-    format: (value) => {
-      return <Switch
-              checked={value === 1}
-              id="saveVideo"
-              color="primary"
-              name="saveVideo"
-              inputProps={{ 'aria-label': 'primary checkbox' }}
-            />
-    }
-  },
-  {
     id: 'action',
     label: '操作',
-    format: (value,row,callBack) => {return <ActionList row={row} callBack={callBack} />},
+    format: (value,row,camera,callBack) => {
+      row.cameraId = camera.id
+      row.cameraCode = camera.code
+      return <ActionList row={row} callBack={callBack} />},
   },
 ];
 
@@ -116,21 +99,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CameraList() {
+export default function CameraShareList(props) {
   const classes = useStyles();
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  var rows,setRows;
-  [rows, setRows] = React.useState([]);
-  var editRow = {
+  const [rows,setRows]  = React.useState([]);
+  const [editRow,setEditRow]  = React.useState({
     id: "",
-    code: "",
-    rtmpAuthCode: "",
-    playAuthCode: "",
-    onlineStatus: 0,
+    cameraId: "",
+    cameraCode: "",
+    name: "",
+    authCode: "",
     enabled: 1,
-    saveVideo: 0,
-    live: 1,
+    startTime: "",
+    deadline: "",
+  });
+  const [camera,setCamera] = React.useState({})
+
+  const getQueryString = (name) => {
+    let reg = new RegExp("(^|&|\\?)" + name + "=([^&]*)(&|$)", "i");
+    let r = window.location.hash.substr(1).match(reg);
+    if (r != null) {
+        return decodeURIComponent(r[2]);
+    };
+    return null;
   }
 
   const handleChangePage = (event, newPage) => {
@@ -143,19 +135,37 @@ export default function CameraList() {
   };
 
   const getPageList = ()=>{
-    API.cameraList()
+    let cameraId = getQueryString("cameraId")
+    API.cameraDetail({id:cameraId})
     .then(res => {
       if (res.code === 1) {
-        rows.splice(0);
-        rows.push(...res.data.page)
-        setRows([])
-        setRows(rows)
+        let camera = res.data
+        if (!camera){
+          return
+        }
+        setCamera(camera)
+        let editRowNew = editRow
+        editRowNew.cameraId = camera.id
+        editRowNew.cameraCode = camera.code
+        setEditRow(editRowNew)
+        API.cameraShareList({cameraId:camera.id})
+        .then(res => {
+          if (res.code === 1) {
+            rows.splice(0);
+            rows.push(...res.data.page)
+            setRows([])
+            setRows(rows)
+          }
+        });
       }
     });
+    
   }
 
   let editRef = React.createRef();
   function edit() {
+    setEditRow({})
+    setEditRow(editRow)
     editRef.current.handleClickOpen();
   }
 
@@ -170,11 +180,19 @@ export default function CameraList() {
             创建
           </Button>
           <Typography variant="h6" className={classes.title}>
-            摄像头列表
+          摄像头: {camera.code?camera.code:'--'} 分享列表
           </Typography>
+          <Button variant="contained">
+            <NavLink exact to={{
+              pathname: "/",
+              // search: "?sort=name",
+              // hash: "#camerashare",
+              state: { }
+            }}>返回</NavLink>
+          </Button>
         </Toolbar>
       </AppBar>
-      <CameraEdit row={editRow} type="add" callBack={getPageList} onRef={editRef}/>
+      <CameraShareEdit row={editRow} type="add" callBack={getPageList} onRef={editRef}/>
       <TableContainer className={classes.container}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
@@ -193,12 +211,12 @@ export default function CameraList() {
           <TableBody>
             {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
               return (
-                <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
+                <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                   {columns.map((column) => {
                     const value = row[column.id];
                     return (
                       <TableCell key={column.id} align={column.align}>
-                        {column.format ? column.format(value,row,getPageList) : value}
+                        {column.format ? column.format(value,row,camera,getPageList) : value}
                       </TableCell>
                     );
                   })}

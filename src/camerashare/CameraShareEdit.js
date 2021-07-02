@@ -9,6 +9,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 import TextField from '@material-ui/core/TextField';
 import { Alert, AlertTitle } from '@material-ui/lab';
+import Dayjs from 'dayjs'
 import Switch from '@material-ui/core/Switch';
 import API from '../api/Api';
 
@@ -35,27 +36,27 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function CameraEdit(props) {
+export default function CameraShareEdit(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const [enabled, setEnabled] = React.useState(props.row.enabled === 1?true:false);
-  const [saveVideo, setSaveVideo] = React.useState(props.row.saveVideo === 1?true:false);
-  const [live, setLive] = React.useState(props.row.live === 1?true:false);
+  const cameraCode = props.row.cameraCode
   const [row, setRow] = React.useState({
     id: props.row.id,
-    code: props.row.code,
-    rtmpAuthCode: props.row.rtmpAuthCode,
-    playAuthCode: props.row.playAuthCode,
-    onlineStatus: props.row.onlineStatus,
+    cameraId: props.row.cameraId,
+    name: props.row.name,
+    authCode: props.row.authCode,
+    startTime: props.row.startTime?props.row.startTime:Dayjs(),
+    deadline: props.row.deadline?props.row.deadline:Dayjs().add(7,"day"),
     enabled: props.row.enabled,
-    saveVideo: props.row.saveVideo,
-    live: props.row.live,
   });
   const [alertShow, setAlertShow] = React.useState(false);
   const [alertText, setAlertText] = React.useState("");
 
   //用useImperativeHandle暴露一些外部ref能访问的属性
   useImperativeHandle(props.onRef, () => {
+    row.cameraId = props.row.cameraId
+    setRow(row)
     return {
       handleClickOpen: handleClickOpen,
     };
@@ -70,7 +71,7 @@ export default function CameraEdit(props) {
   };
 
   const save = (data) => {
-    API.cameraEdit(row)
+    API.cameraShareEdit(row)
     .then(res => {
       if (res.code === 1) {
         setOpen(false);
@@ -88,7 +89,7 @@ export default function CameraEdit(props) {
   };
 
   const deleteCamera = (data) => {
-    API.cameraDelete(row)
+    API.cameraShareDelete(row)
     .then(res => {
       if (res.code === 1) {
         setOpen(false);
@@ -115,12 +116,6 @@ export default function CameraEdit(props) {
     if(event.target.id==="enabled"){
       setEnabled(event.target.checked)
     }
-    if(event.target.id==="saveVideo"){
-      setSaveVideo(event.target.checked)
-    }
-    if(event.target.id==="live"){
-      setLive(event.target.checked)
-    }
   }
 
   return (
@@ -129,7 +124,7 @@ export default function CameraEdit(props) {
         <AppBar className={classes.appBar}>
           <Toolbar>
             <Button variant="contained" onClick={save}>
-              保存
+              保存 
             </Button>
             <span>&nbsp;&nbsp;</span>
             {props.type === 'edit'?
@@ -138,7 +133,7 @@ export default function CameraEdit(props) {
               </Button>:""
             }       
             <Typography variant="h6" className={classes.title}>
-              
+            <div>{row.name?row.name+' 分享编辑':'创建分享'} </div>
             </Typography>
             <Button autoFocus color="inherit" onClick={handleClose}>
               <CloseIcon />
@@ -153,6 +148,7 @@ export default function CameraEdit(props) {
         }
         
         <div className={classes.formDiv}>
+          
           <form className={classes.formClass} noValidate autoComplete="off" onSubmit={save}>
             {props.type === 'edit'?
             <div>
@@ -167,23 +163,46 @@ export default function CameraEdit(props) {
             </div>:""}
             <div>
               <TextField 
-                id="code" 
-                label="摄像头编号" 
-                defaultValue={row.code}
+                id="name" 
+                label="分享名称" 
+                defaultValue={row.name}
                 onChange={formChange}
               />
             </div>
-            <div>
+            {/* <div>
               <TextField 
-                id="rtmpAuthCode" 
-                label="摄像头rtmp权限码" 
-                defaultValue={row.rtmpAuthCode}
+                id="authCode" 
+                label="authCode" 
+                defaultValue={row.authCode}
                 onChange={formChange}
+              />
+            </div> */}
+            <div>
+              <TextField
+                id="startTime"
+                label="开始时间"
+                type="datetime-local"
+                defaultValue={row.startTime?Dayjs(row.startTime).add(new Date().getTimezoneOffset(),"minute").format("YYYY-MM-DDTHH:mm"):Dayjs().format("YYYY-MM-DDTHH:mm")}
+                // className={classes.textField}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </div>
+            <div>
+              <TextField
+                id="deadline"
+                label="截止日期"
+                type="datetime-local"
+                defaultValue={row.deadline?Dayjs(row.deadline).add(new Date().getTimezoneOffset(),"minute").format("YYYY-MM-DDTHH:mm"):Dayjs().add(7,"day").format("YYYY-MM-DDTHH:mm")}
+                // className={classes.textField}
+                InputLabelProps={{
+                  shrink: true,
+                }}
               />
             </div>
             {props.type === 'edit'?"":
             <div>
-              启用状态：
               <Switch
                 checked={enabled}
                 id="enabled"
@@ -194,28 +213,6 @@ export default function CameraEdit(props) {
               />
             </div>
             }
-            <div>
-              录像状态：
-              <Switch
-                checked={saveVideo}
-                id="saveVideo"
-                onChange={switchChange}
-                color="primary"
-                name="saveVideo"
-                inputProps={{ 'aria-label': 'primary checkbox' }}
-              />
-            </div>
-            <div>
-              直播状态：
-              <Switch
-                checked={live}
-                id="live"
-                onChange={switchChange}
-                color="primary"
-                name="live"
-                inputProps={{ 'aria-label': 'primary checkbox' }}
-              />
-            </div>
           </form>
         </div>
       </Dialog>
