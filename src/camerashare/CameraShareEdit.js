@@ -9,7 +9,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 import TextField from '@material-ui/core/TextField';
 import { Alert, AlertTitle } from '@material-ui/lab';
-import Dayjs from 'dayjs'
+import Moment from 'moment'
 import Switch from '@material-ui/core/Switch';
 import API from '../api/Api';
 
@@ -46,12 +46,15 @@ export default function CameraShareEdit(props) {
     cameraId: props.row.cameraId,
     name: props.row.name,
     authCode: props.row.authCode,
-    startTime: props.row.startTime?props.row.startTime:Dayjs(),
-    deadline: props.row.deadline?props.row.deadline:Dayjs().add(7,"day"),
+    startTime: props.row.startTime?props.row.startTime:"",
+    deadline: props.row.deadline?props.row.deadline:"",
     enabled: props.row.enabled,
   });
   const [alertShow, setAlertShow] = React.useState(false);
   const [alertText, setAlertText] = React.useState("");
+
+  let startTime = Moment()
+  let deadline = Moment().add(7,"day")
 
   //用useImperativeHandle暴露一些外部ref能访问的属性
   useImperativeHandle(props.onRef, () => {
@@ -63,6 +66,8 @@ export default function CameraShareEdit(props) {
   });
 
   const handleClickOpen = () => {
+    startTime = Moment()
+    deadline = Moment().add(7,"day")
     setOpen(true);
   };
 
@@ -71,6 +76,8 @@ export default function CameraShareEdit(props) {
   };
 
   const save = (data) => {
+    row.startTime = row.startTime?row.startTime:Moment()
+    row.deadline = row.deadline?row.deadline:Moment().add(7,"day")
     API.cameraShareEdit(row)
     .then(res => {
       if (res.code === 1) {
@@ -182,7 +189,7 @@ export default function CameraShareEdit(props) {
                 id="startTime"
                 label="开始时间"
                 type="datetime-local"
-                defaultValue={row.startTime?Dayjs(row.startTime).add(new Date().getTimezoneOffset(),"minute").format("YYYY-MM-DDTHH:mm"):Dayjs().format("YYYY-MM-DDTHH:mm")}
+                defaultValue={row.startTime?Moment(row.startTime).format("YYYY-MM-DDTHH:mm"):Moment().format("YYYY-MM-DDTHH:mm")}
                 // className={classes.textField}
                 InputLabelProps={{
                   shrink: true,
@@ -194,7 +201,7 @@ export default function CameraShareEdit(props) {
                 id="deadline"
                 label="截止日期"
                 type="datetime-local"
-                defaultValue={row.deadline?Dayjs(row.deadline).add(new Date().getTimezoneOffset(),"minute").format("YYYY-MM-DDTHH:mm"):Dayjs().add(7,"day").format("YYYY-MM-DDTHH:mm")}
+                defaultValue={row.deadline?Moment(row.deadline).format("YYYY-MM-DDTHH:mm"):Moment().add(7,"day").format("YYYY-MM-DDTHH:mm")}
                 // className={classes.textField}
                 InputLabelProps={{
                   shrink: true,

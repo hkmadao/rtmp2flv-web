@@ -14,7 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import AppBar from '@material-ui/core/AppBar';
 import Switch from '@material-ui/core/Switch';
-import Dayjs from 'dayjs'
+import Moment from 'moment'
 import ActionList from './ActionList';
 import CameraShareEdit from './CameraShareEdit';
 import API from '../api/Api';
@@ -38,7 +38,7 @@ const columns = [
     label: '开始时间',
     format: (value) => {
         let offset = new Date().getTimezoneOffset()
-        return value?Dayjs(value).add(offset,'minute').format("YYYY-MM-DD HH:mm"):"---"
+        return value?Moment(value).format("YYYY-MM-DD HH:mm"):"---"
     }
   },
   {
@@ -46,7 +46,7 @@ const columns = [
     label: '截止时间',
     format: (value) => {
       let offset = new Date().getTimezoneOffset()
-        return value?Dayjs(value).add(offset,'minute').format("YYYY-MM-DD HH:mm"):"---"
+        return value?Moment(value).format("YYYY-MM-DD HH:mm"):"---"
     }
   },
   {
