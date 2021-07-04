@@ -46,28 +46,29 @@ export default function CameraShareEdit(props) {
     cameraId: props.row.cameraId,
     name: props.row.name,
     authCode: props.row.authCode,
-    startTime: props.row.startTime?props.row.startTime:"",
-    deadline: props.row.deadline?props.row.deadline:"",
+    startTime: props.row.startTime?props.row.startTime:Moment(),
+    deadline: props.row.deadline?props.row.deadline:Moment().add(7,"day"),
     enabled: props.row.enabled,
   });
   const [alertShow, setAlertShow] = React.useState(false);
   const [alertText, setAlertText] = React.useState("");
 
-  let startTime = Moment()
-  let deadline = Moment().add(7,"day")
-
   //用useImperativeHandle暴露一些外部ref能访问的属性
   useImperativeHandle(props.onRef, () => {
-    row.cameraId = props.row.cameraId
-    setRow(row)
     return {
       handleClickOpen: handleClickOpen,
     };
   });
 
   const handleClickOpen = () => {
-    startTime = Moment()
-    deadline = Moment().add(7,"day")
+    row.id = props.row.id
+    row.cameraId = props.row.cameraId
+    row.name = props.row.name
+    row.authCode = props.row.authCode
+    row.startTime = props.row.startTime?props.row.startTime:Moment()
+    row.deadline = props.row.deadline?props.row.deadline:Moment().add(7,"day")
+    row.enabled = props.row.enabled
+    setRow(row)
     setOpen(true);
   };
 
@@ -76,8 +77,6 @@ export default function CameraShareEdit(props) {
   };
 
   const save = (data) => {
-    row.startTime = row.startTime?row.startTime:Moment()
-    row.deadline = row.deadline?row.deadline:Moment().add(7,"day")
     API.cameraShareEdit(row)
     .then(res => {
       if (res.code === 1) {
@@ -115,6 +114,10 @@ export default function CameraShareEdit(props) {
 
   const formChange = (event) => {
     row[event.target.id] = event.target.value
+  }
+
+  const formDateTimeChange = (event) => {
+    row[event.target.id] = Moment(event.target.value)
   }
 
   const switchChange = (event) => {
@@ -194,6 +197,7 @@ export default function CameraShareEdit(props) {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                onChange={formDateTimeChange}
               />
             </div>
             <div>
@@ -206,6 +210,7 @@ export default function CameraShareEdit(props) {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                onChange={formDateTimeChange}
               />
             </div>
             {props.type === 'edit'?"":
