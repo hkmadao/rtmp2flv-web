@@ -85,6 +85,7 @@ const columns = [
   {
     id: 'action',
     label: '操作',
+    minWidth: 100,
     format: (value,row,callBack) => {return <ActionList row={row} callBack={callBack} />},
   },
 ];
